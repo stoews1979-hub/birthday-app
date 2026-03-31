@@ -93,9 +93,11 @@ const sortPeople = (list) => {
       );
   }
 };
+// eslint-disable-next-line react-hooks/exhaustive-deps
 useEffect(() => {
   loadPeople();
-}, [loadPeople]);
+}, []);
+
 const todayString = new Date().toISOString().slice(5, 10);
 
 const todaysBirthdays = people.filter(person =>
@@ -105,7 +107,7 @@ const todaysBirthdays = people.filter(person =>
 const getNextBirthday = (birthday) => {
   const today = new Date();
 
-  const [, month, day] = birthday.split("-");
+  const [year, month, day] = birthday.split("-");
   const bday = new Date(year, month - 1, day);
 
   let next = new Date(
