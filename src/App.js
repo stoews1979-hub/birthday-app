@@ -123,7 +123,7 @@ const getNextBirthday = (birthday) => {
 };const getDaysUntilBirthday = (birthday) => {
   const today = new Date();
 
-  const [year, month, day] = birthday.split("-");
+  const [, month, day] = birthday.split("-");
   const bdayThisYear = new Date(
     today.getFullYear(),
     month - 1,
