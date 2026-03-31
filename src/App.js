@@ -1,4 +1,5 @@
 
+import "./App.css";
 import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
@@ -231,25 +232,29 @@ const getAge = (birthday) => {
   <button onClick={() => setSortType("age")}>
     Sort: Age 🎯
   </button>
-</div>
+  </div>
 <h2>People</h2>
 {sortPeople(people).map((person) => (
-    <div key={person.id}>
-  {person.name} - {formatDate(person.birthday)} ({getAge(person.birthday)}) -{" "}
-  {getBirthdayText(person.birthday)}
+  <div className="person-row">
+  <span>
+    {person.name} - {formatDate(person.birthday)} ({getAge(person.birthday)}) -{" "}
+    {getBirthdayText(person.birthday)}
+  </span>
 
-  <button onClick={() => {
-    setName(person.name);
-    setBirthday(person.birthday);
-    setEditingId(person.id);
-  }}>
-    Edit
-  </button>
+  <span className="actions">
+      <button onClick={() => {
+        setName(person.name);
+        setBirthday(person.birthday);
+        setEditingId(person.id);
+      }}>
+        Edit
+      </button>
 
-  <button onClick={() => deletePerson(person.id)}>
-    Delete
-  </button>
-</div>
+      <button onClick={() => deletePerson(person.id)}>
+        Delete
+      </button>
+    </span>
+  </div>
 ))}
 
     </div>
