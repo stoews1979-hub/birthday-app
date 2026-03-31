@@ -3,7 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { useState, useEffect, useCallback } from "react";
+const getPeopleCollection = () => {
+  console.log("DB:", db);
+  return collection(db, "people");
+};
 function App() {
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -19,10 +22,7 @@ const signUp = async () => {
 const login = async () => {
   await signInWithEmailAndPassword(auth, email, password);
 };
-const getPeopleCollection = () => {
-  console.log("DB:", db);
-  return collection(db, "people");
-};
+
 const addPerson = async () => {
   if (!name || !birthday) return;
 
@@ -69,7 +69,8 @@ const loadPeople = useCallback(async () => {
   } catch (err) {
     console.error("ERROR LOADING PEOPLE:", err);
   }
-}, []);const sortPeople = (list) => {
+}, [getPeopleCollection]);
+const sortPeople = (list) => {
   switch (sortType) {
     case "name":
       return [...list].sort((a, b) =>
