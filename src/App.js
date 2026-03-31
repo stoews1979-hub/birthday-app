@@ -149,14 +149,20 @@ const getDaysUntilBirthday = (birthday) => {
 };
 
 const formatDate = (dateString) => {
-  const [year, month, day] = dateString.split("-");
+  const parts = dateString.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+
   return new Date(year, month - 1, day).toLocaleDateString("en-US");
 };
-
 const getAge = (birthday) => {
   const today = new Date();
 
-  const [year, month, day] = birthday.split("-");
+  const parts = birthday.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
 
   let age = today.getFullYear() - year;
 
@@ -168,8 +174,7 @@ const getAge = (birthday) => {
   }
 
   return age;
-};
-const getBirthdayText = (birthday) => {
+};const getBirthdayText = (birthday) => {
   const days = getDaysUntilBirthday(birthday);
 
   if (days === 0) return "🎉 Today!";
