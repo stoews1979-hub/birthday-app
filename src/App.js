@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-
+import { useState, useEffect, useCallback } from "react";
 function App() {
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -54,15 +55,10 @@ const deletePerson = async (id) => {
   loadPeople();
 };
 
-const loadPeople = async () => {
-  console.log("LOADING PEOPLE...");
-
+const loadPeople = useCallback(async () => {
   try {
     const col = getPeopleCollection();
     const data = await getDocs(col);
-console.log("SNAPSHOT SIZE:", data.size);
-console.log("DOCS:", data.docs);
-    console.log("DATA:", data.docs);
 
     setPeople(
       data.docs.map(doc => ({
@@ -73,8 +69,7 @@ console.log("DOCS:", data.docs);
   } catch (err) {
     console.error("ERROR LOADING PEOPLE:", err);
   }
-};
-const sortPeople = (list) => {
+}, []);const sortPeople = (list) => {
   switch (sortType) {
     case "name":
       return [...list].sort((a, b) =>
@@ -93,10 +88,9 @@ const sortPeople = (list) => {
       );
   }
 };
-// eslint-disable-next-line react-hooks/exhaustive-deps
 useEffect(() => {
   loadPeople();
-}, []);
+}, [loadPeople]);
 
 const todayString = new Date().toISOString().slice(5, 10);
 
