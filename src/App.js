@@ -168,7 +168,13 @@ const getAge = (birthday) => {
 
   return age;
 };
+const getBirthdayText = (birthday) => {
+  const days = getDaysUntilBirthday(birthday);
 
+  if (days === 0) return "🎉 Today!";
+  if (days === 1) return "🎂 Tomorrow";
+  return `in ${days} days`;
+};
   return (
     <div style={{ padding: 20 }}>
       <h1>Birthday App 🎂</h1>
@@ -231,33 +237,21 @@ const getAge = (birthday) => {
 <h2>People</h2>
 {sortPeople(people).map((person) => (
     <div key={person.id}>
-{(() => {
-  const days = getDaysUntilBirthday(person.birthday);
+  {person.name} - {formatDate(person.birthday)} ({getAge(person.birthday)}) -{" "}
+  {getBirthdayText(person.birthday)}
 
-  return (
-    <>
-      {person.name} - {formatDate(person.birthday)} ({getAge(person.birthday)}) -{" "}
-      {days === 0
-        ? "🎉 Today!"
-        : days === 1
-        ? "🎂 Tomorrow"
-        : `in ${days} days`}
-    </>
-  );
-})()}
+  <button onClick={() => {
+    setName(person.name);
+    setBirthday(person.birthday);
+    setEditingId(person.id);
+  }}>
+    Edit
+  </button>
 
-      <button onClick={() => {
-        setName(person.name);
-        setBirthday(person.birthday);
-        setEditingId(person.id);
-      }}>
-        Edit
-      </button>
-
-      <button onClick={() => deletePerson(person.id)}>
-        Delete
-      </button>
-    </div>
+  <button onClick={() => deletePerson(person.id)}>
+    Delete
+  </button>
+</div>
 ))}
 
     </div>
