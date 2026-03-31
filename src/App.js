@@ -107,7 +107,7 @@ const todaysBirthdays = people.filter(person =>
 const getNextBirthday = (birthday) => {
   const today = new Date();
 
-  const [year, month, day] = birthday.split("-");
+  const [, month, day] = birthday.split("-");
   const bday = new Date(year, month - 1, day);
 
   let next = new Date(
