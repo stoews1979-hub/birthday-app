@@ -1,0 +1,267 @@
+import { useState, useEffect } from "react";
+import { db, auth } from "./firebase";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+
+function App() {
+  const [name, setName] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [people, setPeople] = useState([]);
+const [editingId, setEditingId] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+const [sortType, setSortType] = useState("nextBirthday");
+const signUp = async () => {
+  await createUserWithEmailAndPassword(auth, email, password);
+};
+
+const login = async () => {
+  await signInWithEmailAndPassword(auth, email, password);
+};
+const getPeopleCollection = () => {
+  console.log("DB:", db);
+  return collection(db, "people");
+};
+const addPerson = async () => {
+  if (!name || !birthday) return;
+
+  await addDoc(getPeopleCollection(), {
+    name,
+    birthday
+  });
+
+  setName("");
+  setBirthday("");
+  loadPeople();
+};
+const updatePerson = async () => {
+  console.log("UPDATING ID:", editingId);
+
+  if (!name || !birthday || !editingId) return;
+
+  await updateDoc(doc(db, "people", editingId), {
+    name,
+    birthday
+  });
+
+  setName("");
+  setBirthday("");
+  setEditingId(null);
+  loadPeople();
+};
+const deletePerson = async (id) => {
+  await deleteDoc(doc(db, "people", id));
+  loadPeople();
+};
+
+const loadPeople = async () => {
+  console.log("LOADING PEOPLE...");
+
+  try {
+    const col = getPeopleCollection();
+    const data = await getDocs(col);
+console.log("SNAPSHOT SIZE:", data.size);
+console.log("DOCS:", data.docs);
+    console.log("DATA:", data.docs);
+
+    setPeople(
+      data.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      }))
+    );
+  } catch (err) {
+    console.error("ERROR LOADING PEOPLE:", err);
+  }
+};
+const sortPeople = (list) => {
+  switch (sortType) {
+    case "name":
+      return [...list].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
+    case "age":
+      return [...list].sort((a, b) =>
+        getAge(b.birthday) - getAge(a.birthday)
+      );
+
+    case "nextBirthday":
+    default:
+      return [...list].sort((a, b) =>
+        getNextBirthday(a.birthday) - getNextBirthday(b.birthday)
+      );
+  }
+};
+useEffect(() => {
+console.log("USE EFFECT RUNNING");
+  loadPeople();console.log("AFTER loadPeople");
+}, []);
+const todayString = new Date().toISOString().slice(5, 10);
+
+const todaysBirthdays = people.filter(person =>
+  person.birthday && person.birthday.slice(5, 10) === todayString
+);
+
+const getNextBirthday = (birthday) => {
+  const today = new Date();
+
+  const [year, month, day] = birthday.split("-");
+  const bday = new Date(year, month - 1, day);
+
+  let next = new Date(
+    today.getFullYear(),
+    bday.getMonth(),
+    bday.getDate()
+  );
+
+  if (next < today) {
+    next.setFullYear(today.getFullYear() + 1);
+  }
+
+  return next;
+};
+const getDaysUntilBirthday = (birthday) => {
+  const today = new Date();
+
+  const [year, month, day] = birthday.split("-");
+  const bdayThisYear = new Date(
+    today.getFullYear(),
+    month - 1,
+    day
+  );
+
+  let nextBirthday = bdayThisYear;
+
+  if (bdayThisYear < today) {
+    nextBirthday = new Date(
+      today.getFullYear() + 1,
+      month - 1,
+      day
+    );
+  }
+
+  const diffTime = nextBirthday - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+};
+
+const formatDate = (dateString) => {
+  const [year, month, day] = dateString.split("-");
+  return new Date(year, month - 1, day).toLocaleDateString("en-US");
+};
+
+const getAge = (birthday) => {
+  const today = new Date();
+
+  const [year, month, day] = birthday.split("-");
+
+  let age = today.getFullYear() - year;
+
+  if (
+    today.getMonth() < month - 1 ||
+    (today.getMonth() === month - 1 && today.getDate() < day)
+  ) {
+    age--;
+  }
+
+  return age;
+};
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Birthday App 🎂</h1>
+<h2>Login</h2>
+
+<input
+  placeholder="Email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+/>
+
+<input
+  type="password"
+  placeholder="Password"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+/>
+
+<button onClick={signUp}>Sign Up</button>
+<button onClick={login}>Login</button>
+      <input
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+
+      <input
+        type="date"
+        value={birthday}
+        onChange={(e) => setBirthday(e.target.value)}
+      />
+
+      <button onClick={editingId ? updatePerson : addPerson}>
+  {editingId ? "Update" : "Add"}
+</button>
+<h2>Today's Birthdays 🎉</h2>
+{todaysBirthdays.length === 0 ? (
+  <div>No birthdays today</div>
+) : (
+  todaysBirthdays.map(person => (
+    <div key={person.id}>
+      🎂 {person.name}
+    </div>
+  ))
+)}
+
+<div style={{ marginBottom: 10 }}>
+  <button onClick={() => setSortType("nextBirthday")}>
+    Sort: Upcoming 🎂
+  </button>
+
+  <button onClick={() => setSortType("name")}>
+    Sort: Name 🔤
+  </button>
+
+  <button onClick={() => setSortType("age")}>
+    Sort: Age 🎯
+  </button>
+</div>
+<h2>People</h2>
+{sortPeople(people).map((person) => (
+    <div key={person.id}>
+{(() => {
+  const days = getDaysUntilBirthday(person.birthday);
+
+  return (
+    <>
+      {person.name} - {formatDate(person.birthday)} ({getAge(person.birthday)}) -{" "}
+      {days === 0
+        ? "🎉 Today!"
+        : days === 1
+        ? "🎂 Tomorrow"
+        : `in ${days} days`}
+    </>
+  );
+})()}
+
+      <button onClick={() => {
+        setName(person.name);
+        setBirthday(person.birthday);
+        setEditingId(person.id);
+      }}>
+        Edit
+      </button>
+
+      <button onClick={() => deletePerson(person.id)}>
+        Delete
+      </button>
+    </div>
+))}
+
+    </div>
+  );
+}
+
+export default App;
