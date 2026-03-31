@@ -108,12 +108,11 @@ const getNextBirthday = (birthday) => {
   const today = new Date();
 
   const [, month, day] = birthday.split("-");
-  const bday = new Date(year, month - 1, day);
 
   let next = new Date(
     today.getFullYear(),
-    bday.getMonth(),
-    bday.getDate()
+    month - 1,
+    day
   );
 
   if (next < today) {
@@ -121,8 +120,7 @@ const getNextBirthday = (birthday) => {
   }
 
   return next;
-};
-const getDaysUntilBirthday = (birthday) => {
+};const getDaysUntilBirthday = (birthday) => {
   const today = new Date();
 
   const [year, month, day] = birthday.split("-");
