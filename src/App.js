@@ -5,10 +5,9 @@ import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 function App() {
-  const getCollection = () => {
-  console.log("VIEW:", viewType);
+  const getCollection = useCallback(() => {
   return collection(db, viewType);
-};
+}, [viewType]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
