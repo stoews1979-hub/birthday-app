@@ -5,6 +5,7 @@ import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 function App() {
+  const [viewType, setViewType] = useState("people");
   const getCollection = useCallback(() => {
   return collection(db, viewType);
 }, [viewType]);
