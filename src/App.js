@@ -280,8 +280,7 @@ const getBirthdayText = (birthday) => {
     {person.name} - {formatDate(person.birthday)} (
   {viewType === "people"
     ? `${getAge(person.birthday)} yrs old`
-    : `${getYearsMarried(person.birthday)} years together`}
-)
+    : `${getYearsMarried(person.birthday)} years married`}
 ) -{" "}
     {getBirthdayText(person.birthday)}
   </span>
