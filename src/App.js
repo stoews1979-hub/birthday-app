@@ -186,7 +186,10 @@ const getYearsMarried = (date) => {
     years--;
   }
 
-  return years;
+  if (years === 0) return "Just married 🎉";
+  if (years === 1) return "1 year married";
+
+  return `${years} years married`;
 };
 const getBirthdayText = (birthday) => {
   const days = getDaysUntilBirthday(birthday);
@@ -280,9 +283,8 @@ const getBirthdayText = (birthday) => {
     {person.name} - {formatDate(person.birthday)} (
   {viewType === "people"
     ? `${getAge(person.birthday)} yrs old`
-    : `${getYearsMarried(person.birthday)} years married`}
-) -{" "}
-    {getBirthdayText(person.birthday)}
+    : getYearsMarried(person.birthday)}
+) - {getBirthdayText(person.birthday)}
   </span>
 
  {isAdmin && (
