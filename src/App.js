@@ -92,7 +92,7 @@ const loadPeople = useCallback(async () => {
 };
 useEffect(() => {
   loadPeople();
-}, [loadPeople, viewType]);
+}, [loadPeople]);
 
 const todayString = new Date().toISOString().slice(5, 10);
 
@@ -168,7 +168,27 @@ const getAge = (birthday) => {
   }
 
   return age;
-};const getBirthdayText = (birthday) => {
+};
+const getYearsMarried = (date) => {
+  const today = new Date();
+
+  const parts = date.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+
+  let years = today.getFullYear() - year;
+
+  if (
+    today.getMonth() < month - 1 ||
+    (today.getMonth() === month - 1 && today.getDate() < day)
+  ) {
+    years--;
+  }
+
+  return years;
+};
+const getBirthdayText = (birthday) => {
   const days = getDaysUntilBirthday(birthday);
 
   if (days === 0) return "🎉 Today!";
@@ -258,8 +278,10 @@ const getAge = (birthday) => {
   <div className="person-row">
   <span>
     {person.name} - {formatDate(person.birthday)} (
-  {getAge(person.birthday)}{" "}
-  {viewType === "people" ? "yrs old" : "years together"}
+  {viewType === "people"
+    ? `${getAge(person.birthday)} yrs old`
+    : `${getYearsMarried(person.birthday)} years together`}
+)
 ) -{" "}
     {getBirthdayText(person.birthday)}
   </span>
