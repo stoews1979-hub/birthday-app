@@ -17,7 +17,6 @@ const [editingId, setEditingId] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 const [sortType, setSortType] = useState("nextBirthday");
-const [viewType, setViewType] = useState("people");
 const signUp = async () => {
   await createUserWithEmailAndPassword(auth, email, password);
 };
@@ -43,7 +42,7 @@ const updatePerson = async () => {
 
   if (!name || !birthday || !editingId) return;
 
-  await updateDoc(doc(db, "people", editingId), {
+  await updateDoc(doc(db, viewType, editingId), {
     name,
     birthday
   });
@@ -54,7 +53,7 @@ const updatePerson = async () => {
   loadPeople();
 };
 const deletePerson = async (id) => {
-  await deleteDoc(doc(db, "people", id));
+  await deleteDoc(doc(db, viewType, id));
   loadPeople();
 };
 
