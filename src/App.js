@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-const isPublicView = true;
 const getPeopleCollection = () => {
   console.log("DB:", db);
   return collection(db, "people");
 };
 function App() {
+  const [isAdmin, setIsAdmin] = useState(false);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [people, setPeople] = useState([]);
@@ -178,7 +178,10 @@ const getAge = (birthday) => {
   return (
     <div style={{ padding: 20 }}>
       <h1>Birthday App 🎂</h1>
-{!isPublicView && (
+      <button onClick={() => setIsAdmin(!isAdmin)}>
+  {isAdmin ? "Exit Admin Mode" : "Enter Admin Mode"}
+</button>
+{isAdmin && (
   <>
     <h2>Login</h2>
 
@@ -247,7 +250,7 @@ const getAge = (birthday) => {
     {getBirthdayText(person.birthday)}
   </span>
 
-  {!isPublicView && (
+ {isAdmin && (
   <span className="actions">
     <button onClick={() => {
       setName(person.name);
