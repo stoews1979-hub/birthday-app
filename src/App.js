@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-const getPeopleCollection = () => {
-  console.log("DB:", db);
-  return collection(db, "people");
-};
 function App() {
+  const getCollection = () => {
+  console.log("VIEW:", viewType);
+  return collection(db, viewType);
+};
   const [isAdmin, setIsAdmin] = useState(false);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -17,6 +17,7 @@ const [editingId, setEditingId] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 const [sortType, setSortType] = useState("nextBirthday");
+const [viewType, setViewType] = useState("people");
 const signUp = async () => {
   await createUserWithEmailAndPassword(auth, email, password);
 };
@@ -28,7 +29,7 @@ const login = async () => {
 const addPerson = async () => {
   if (!name || !birthday) return;
 
-  await addDoc(getPeopleCollection(), {
+  await addDoc(getCollection(), {
     name,
     birthday
   });
@@ -59,7 +60,7 @@ const deletePerson = async (id) => {
 
 const loadPeople = useCallback(async () => {
   try {
-    const col = getPeopleCollection();
+    const col = getCollection();
     const data = await getDocs(col);
 
     setPeople(
@@ -71,7 +72,7 @@ const loadPeople = useCallback(async () => {
   } catch (err) {
     console.error("ERROR LOADING PEOPLE:", err);
   }
-}, []);const sortPeople = (list) => {
+}, [viewType]);const sortPeople = (list) => {
   switch (sortType) {
     case "name":
       return [...list].sort((a, b) =>
@@ -92,7 +93,7 @@ const loadPeople = useCallback(async () => {
 };
 useEffect(() => {
   loadPeople();
-}, [loadPeople]);
+}, [loadPeople, viewType]);
 
 const todayString = new Date().toISOString().slice(5, 10);
 
@@ -178,6 +179,15 @@ const getAge = (birthday) => {
   return (
     <div style={{ padding: 20 }}>
       <h1>Birthday App 🎂</h1>
+      <div style={{ marginBottom: 10 }}>
+  <button onClick={() => setViewType("people")}>
+    🎂 Birthdays
+  </button>
+
+  <button onClick={() => setViewType("anniversaries")}>
+    💍 Anniversaries
+  </button>
+</div>
       <button onClick={() => setIsAdmin(!isAdmin)}>
   {isAdmin ? "Exit Admin Mode" : "Enter Admin Mode"}
 </button>
@@ -242,11 +252,16 @@ const getAge = (birthday) => {
     Sort: Age 🎯
   </button>
   </div>
-<h2>People</h2>
+<h2>
+  {viewType === "people" ? "Birthdays 🎂" : "Anniversaries 💍"}
+</h2>
 {sortPeople(people).map((person) => (
   <div className="person-row">
   <span>
-    {person.name} - {formatDate(person.birthday)} ({getAge(person.birthday)}) -{" "}
+    {person.name} - {formatDate(person.birthday)} (
+  {getAge(person.birthday)}{" "}
+  {viewType === "people" ? "yrs old" : "years together"}
+) -{" "}
     {getBirthdayText(person.birthday)}
   </span>
 
