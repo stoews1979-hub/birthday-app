@@ -17,6 +17,8 @@ const [editingId, setEditingId] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 const [sortType, setSortType] = useState("nextBirthday");
+const [birthdays, setBirthdays] = useState([]);
+const [anniversaries, setAnniversaries] = useState([]);
 const signUp = async () => {
   await createUserWithEmailAndPassword(auth, email, password);
 };
@@ -91,15 +93,38 @@ const loadPeople = useCallback(async () => {
   }
 };
 useEffect(() => {
-  loadPeople();
+  loadPeople();   
+  loadAllData();    
 }, [loadPeople]);
+const loadAllData = async () => {
+  try {
+    const birthdayData = await getDocs(collection(db, "people"));
+    const anniversaryData = await getDocs(collection(db, "anniversaries"));
 
+    setBirthdays(
+      birthdayData.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      }))
+    );
+
+    setAnniversaries(
+      anniversaryData.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      }))
+    );
+  } catch (err) {
+    console.error("ERROR LOADING ALL DATA:", err);
+  }
+};
 const todayString = new Date().toISOString().slice(5, 10);
 
-const todaysBirthdays = people.filter(person =>
+const todaysBirthdays = birthdays.filter(person =>
   person.birthday && person.birthday.slice(5, 10) === todayString
 );
-const todaysAnniversaries = people.filter(person =>
+
+const todaysAnniversaries = anniversaries.filter(person =>
   person.birthday && person.birthday.slice(5, 10) === todayString
 );
 const getNextBirthday = (birthday) => {
@@ -201,8 +226,28 @@ const getBirthdayText = (birthday) => {
   return `in ${days} days`;
 };
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Birthday App 🎂</h1>
+  <div style={{ padding: 20 }}>
+    <h1>Birthday App 🎂</h1>
+
+    <h2>Today's Birthdays 🎉</h2>
+    {todaysBirthdays.length === 0 ? (
+      <div>No birthdays today</div>
+    ) : (
+      todaysBirthdays.map(person => (
+        <div key={person.id}>🎂 {person.name}</div>
+      ))
+    )}
+
+    <h2>Today's Anniversaries 💍</h2>
+    {todaysAnniversaries.length === 0 ? (
+      <div>No anniversaries today</div>
+    ) : (
+      todaysAnniversaries.map(person => (
+        <div key={person.id}>💍 {person.name}</div>
+      ))
+    )}
+
+    <h2>Login</h2>
       <div style={{ marginBottom: 10 }}>
   <button onClick={() => setViewType("people")}>
     🎂 Birthdays
@@ -251,27 +296,6 @@ const getBirthdayText = (birthday) => {
       {editingId ? "Update" : "Add"}
     </button>
   </>
-)}
-<h2>Today's Birthdays 🎉</h2>
-{viewType === "people" && (
-  todaysBirthdays.length === 0 ? (
-    <div>No birthdays today</div>
-  ) : (
-    todaysBirthdays.map(person => (
-      <div key={person.id}>🎂 {person.name}</div>
-    ))
-  )
-)}
-
-<h2>Today's Anniversaries 💍</h2>
-{viewType === "anniversaries" && (
-  todaysAnniversaries.length === 0 ? (
-    <div>No anniversaries today</div>
-  ) : (
-    todaysAnniversaries.map(person => (
-      <div key={person.id}>💍 {person.name}</div>
-    ))
-  )
 )}
 
 <div style={{ marginBottom: 10 }}>
