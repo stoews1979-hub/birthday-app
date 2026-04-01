@@ -99,7 +99,9 @@ const todayString = new Date().toISOString().slice(5, 10);
 const todaysBirthdays = people.filter(person =>
   person.birthday && person.birthday.slice(5, 10) === todayString
 );
-
+const todaysAnniversaries = people.filter(person =>
+  person.birthday && person.birthday.slice(5, 10) === todayString
+);
 const getNextBirthday = (birthday) => {
   const today = new Date();
 
@@ -251,14 +253,25 @@ const getBirthdayText = (birthday) => {
   </>
 )}
 <h2>Today's Birthdays 🎉</h2>
-{todaysBirthdays.length === 0 ? (
-  <div>No birthdays today</div>
-) : (
-  todaysBirthdays.map(person => (
-    <div key={person.id}>
-      🎂 {person.name}
-    </div>
-  ))
+{viewType === "people" && (
+  todaysBirthdays.length === 0 ? (
+    <div>No birthdays today</div>
+  ) : (
+    todaysBirthdays.map(person => (
+      <div key={person.id}>🎂 {person.name}</div>
+    ))
+  )
+)}
+
+<h2>Today's Anniversaries 💍</h2>
+{viewType === "anniversaries" && (
+  todaysAnniversaries.length === 0 ? (
+    <div>No anniversaries today</div>
+  ) : (
+    todaysAnniversaries.map(person => (
+      <div key={person.id}>💍 {person.name}</div>
+    ))
+  )
 )}
 
 <div style={{ marginBottom: 10 }}>
