@@ -71,7 +71,7 @@ const loadPeople = useCallback(async () => {
   } catch (err) {
     console.error("ERROR LOADING PEOPLE:", err);
   }
-}, [viewType]);const sortPeople = (list) => {
+}, [getCollection]);const sortPeople = (list) => {
   switch (sortType) {
     case "name":
       return [...list].sort((a, b) =>
