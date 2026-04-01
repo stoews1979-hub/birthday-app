@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+const isPublicView = true;
 const getPeopleCollection = () => {
   console.log("DB:", db);
   return collection(db, "people");
@@ -177,38 +178,43 @@ const getAge = (birthday) => {
   return (
     <div style={{ padding: 20 }}>
       <h1>Birthday App 🎂</h1>
-<h2>Login</h2>
+{!isPublicView && (
+  <>
+    <h2>Login</h2>
 
-<input
-  placeholder="Email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-/>
+    <input
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
 
-<input
-  type="password"
-  placeholder="Password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-/>
+    <input
+      type="password"
+      placeholder="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
 
-<button onClick={signUp}>Sign Up</button>
-<button onClick={login}>Login</button>
-      <input
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+    <button onClick={signUp}>Sign Up</button>
+    <button onClick={login}>Login</button>
 
-      <input
-        type="date"
-        value={birthday}
-        onChange={(e) => setBirthday(e.target.value)}
-      />
+    <input
+      placeholder="Name"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+    />
 
-      <button onClick={editingId ? updatePerson : addPerson}>
-  {editingId ? "Update" : "Add"}
-</button>
+    <input
+      type="date"
+      value={birthday}
+      onChange={(e) => setBirthday(e.target.value)}
+    />
+
+    <button onClick={editingId ? updatePerson : addPerson}>
+      {editingId ? "Update" : "Add"}
+    </button>
+  </>
+)}
 <h2>Today's Birthdays 🎉</h2>
 {todaysBirthdays.length === 0 ? (
   <div>No birthdays today</div>
@@ -241,19 +247,21 @@ const getAge = (birthday) => {
     {getBirthdayText(person.birthday)}
   </span>
 
+  {!isPublicView && (
   <span className="actions">
-      <button onClick={() => {
-        setName(person.name);
-        setBirthday(person.birthday);
-        setEditingId(person.id);
-      }}>
-        Edit
-      </button>
+    <button onClick={() => {
+      setName(person.name);
+      setBirthday(person.birthday);
+      setEditingId(person.id);
+    }}>
+      Edit
+    </button>
 
-      <button onClick={() => deletePerson(person.id)}>
-        Delete
-      </button>
-    </span>
+    <button onClick={() => deletePerson(person.id)}>
+      Delete
+    </button>
+  </span>
+)}
   </div>
 ))}
 
