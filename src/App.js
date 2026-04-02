@@ -81,9 +81,13 @@ const loadPeople = useCallback(async () => {
       );
 
     case "age":
-      return [...list].sort((a, b) =>
-        getAge(b.birthday) - getAge(a.birthday)
-      );
+  return [...list].sort((a, b) => {
+    const ageDiff = getAge(b.birthday) - getAge(a.birthday);
+
+    if (ageDiff !== 0) return ageDiff;
+
+    return getNextBirthday(a.birthday) - getNextBirthday(b.birthday);
+  });
 
     case "nextBirthday":
     default:
