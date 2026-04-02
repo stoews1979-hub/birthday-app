@@ -220,28 +220,19 @@ const getYearsMarriedNumber = (date) => {
 
   return years;
 };
-const getAge = (birthday) => {
-  const today = new Date();
+const getOrdinal = (num) => {
+  const mod10 = num % 10;
+  const mod100 = num % 100;
 
-  const parts = birthday.split("-");
-  const year = Number(parts[0]);
-  const month = Number(parts[1]);
-  const day = Number(parts[2]);
+  if (mod100 >= 11 && mod100 <= 13) return `${num}th`;
 
-  let age = today.getFullYear() - year;
+  if (mod10 === 1) return `${num}st`;
+  if (mod10 === 2) return `${num}nd`;
+  if (mod10 === 3) return `${num}rd`;
 
-  if (
-    today.getMonth() < month - 1 ||
-    (today.getMonth() === month - 1 && today.getDate() < day)
-  ) {
-    age--;
-  }
-
-  if (age === 0) return "newborn 👶";
-  if (age === 1) return "1 yr old";
-
-  return `${age} yrs old`;
+  return `${num}th`;
 };
+
 const getYearsMarried = (date) => {
   const today = new Date();
 
@@ -371,7 +362,7 @@ const getBirthdayText = (birthday) => {
   {" • "}
   {viewType === "people"
     ? `turns ${getAgeNumber(person.birthday) + 1} ${getBirthdayText(person.birthday)}`
-    : `${getYearsMarriedNumber(person.birthday) + 1}th anniversary ${getBirthdayText(person.birthday)}`
+    : `${getOrdinal(getYearsMarriedNumber(person.birthday) + 1)} anniversary ${getBirthdayText(person.birthday)}`         
   }
 </span>
  {isAdmin && (
