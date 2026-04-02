@@ -201,6 +201,25 @@ const getAgeNumber = (birthday) => {
 
   return age;
 };
+const getYearsMarriedNumber = (date) => {
+  const today = new Date();
+
+  const parts = date.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+
+  let years = today.getFullYear() - year;
+
+  if (
+    today.getMonth() < month - 1 ||
+    (today.getMonth() === month - 1 && today.getDate() < day)
+  ) {
+    years--;
+  }
+
+  return years;
+};
 const getAge = (birthday) => {
   const today = new Date();
 
@@ -343,14 +362,18 @@ const getBirthdayText = (birthday) => {
 </h2>
 {sortPeople(people).map((person) => (
   <div className="person-row">
-  <span>
+ <span>
   {person.name} - {formatDate(person.birthday)} (
   {viewType === "people"
-    ? getAge(person.birthday)
+    ? getAgeNumber(person.birthday)
     : getYearsMarried(person.birthday)}
-  ) - {getBirthdayText(person.birthday)}
+  )
+  {" • "}
+  {viewType === "people"
+    ? `turns ${getAgeNumber(person.birthday) + 1} ${getBirthdayText(person.birthday)}`
+    : `${getYearsMarriedNumber(person.birthday) + 1}th anniversary ${getBirthdayText(person.birthday)}`
+  }
 </span>
-
  {isAdmin && (
   <span className="actions">
     <button onClick={() => {
