@@ -221,9 +221,9 @@ const getYearsMarried = (date) => {
   }
 
   if (years === 0) return "Just married 🎉";
-  if (years === 1) return "1 year married";
+  if (years === 1) return "1 yr";
 
-  return `${years} years married`;
+  return `${years} yrs`;
 };
 const getBirthdayText = (birthday) => {
   const days = getDaysUntilBirthday(birthday);
