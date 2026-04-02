@@ -198,7 +198,10 @@ const getAge = (birthday) => {
     age--;
   }
 
-  return age;
+  if (age === 0) return "newborn 👶";
+  if (age === 1) return "1 yr old";
+
+  return `${age} yrs old`;
 };
 const getYearsMarried = (date) => {
   const today = new Date();
@@ -321,12 +324,12 @@ const getBirthdayText = (birthday) => {
 {sortPeople(people).map((person) => (
   <div className="person-row">
   <span>
-    {person.name} - {formatDate(person.birthday)} (
+  {person.name} - {formatDate(person.birthday)} (
   {viewType === "people"
-    ? `${getAge(person.birthday)} yrs old`
+    ? getAge(person.birthday)
     : getYearsMarried(person.birthday)}
-) - {getBirthdayText(person.birthday)}
-  </span>
+  ) - {getBirthdayText(person.birthday)}
+</span>
 
  {isAdmin && (
   <span className="actions">
