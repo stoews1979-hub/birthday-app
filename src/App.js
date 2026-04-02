@@ -82,10 +82,11 @@ const loadPeople = useCallback(async () => {
 
     case "age":
   return [...list].sort((a, b) => {
-    const ageDiff = getAge(b.birthday) - getAge(a.birthday);
+    const ageDiff = getAgeNumber(b.birthday) - getAgeNumber(a.birthday);
 
     if (ageDiff !== 0) return ageDiff;
 
+    // tie-breaker: next birthday
     return getNextBirthday(a.birthday) - getNextBirthday(b.birthday);
   });
 
@@ -181,6 +182,25 @@ const formatDate = (dateString) => {
 
   return new Date(year, month - 1, day).toLocaleDateString("en-US");
 };
+const getAgeNumber = (birthday) => {
+  const today = new Date();
+
+  const parts = birthday.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+
+  let age = today.getFullYear() - year;
+
+  if (
+    today.getMonth() < month - 1 ||
+    (today.getMonth() === month - 1 && today.getDate() < day)
+  ) {
+    age--;
+  }
+
+  return age;
+};
 const getAge = (birthday) => {
   const today = new Date();
 
@@ -233,7 +253,7 @@ const getBirthdayText = (birthday) => {
   return `in ${days} days`;
 };
   return (
-  <div style={{ padding: 20 }}>
+  <div className="app-container">
     <h1>Birthday App 🎂</h1>
 
     <h2>Today's Birthdays 🎉</h2>
@@ -255,7 +275,7 @@ const getBirthdayText = (birthday) => {
     )}
 
     <h2>Login</h2>
-      <div style={{ marginBottom: 10 }}>
+      <div className="top-buttons">
   <button onClick={() => setViewType("people")}>
     🎂 Birthdays
   </button>
