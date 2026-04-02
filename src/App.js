@@ -232,7 +232,14 @@ const getOrdinal = (num) => {
 
   return `${num}th`;
 };
+const getAgeDisplay = (birthday) => {
+  const age = getAgeNumber(birthday);
 
+  if (age === 0) return "newborn 👶";
+  if (age === 1) return "1 yr";
+
+  return `${age} yrs`;
+};
 const getYearsMarried = (date) => {
   const today = new Date();
 
@@ -356,14 +363,13 @@ const getBirthdayText = (birthday) => {
  <span>
   {person.name} - {formatDate(person.birthday)} (
   {viewType === "people"
-    ? getAgeNumber(person.birthday)
+    ? getAgeDisplay(person.birthday)
     : getYearsMarried(person.birthday)}
   )
   {" • "}
   {viewType === "people"
     ? `turns ${getAgeNumber(person.birthday) + 1} ${getBirthdayText(person.birthday)}`
-    : `${getOrdinal(getYearsMarriedNumber(person.birthday) + 1)} anniversary ${getBirthdayText(person.birthday)}`         
-  }
+    : `${getOrdinal(getYearsMarriedNumber(person.birthday) + 1)} anniversary ${getBirthdayText(person.birthday)}`}
 </span>
  {isAdmin && (
   <span className="actions">
