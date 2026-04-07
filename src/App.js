@@ -63,11 +63,7 @@ const login = async () => {
 
   setLoading(false);
 };
-{error && (
-  <div style={{ color: "red", marginTop: 10 }}>
-    {error}
-  </div>
-)}
+
 
 const addPerson = async () => {
   if (!name || !birthday) return;
@@ -382,6 +378,11 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
     <button onClick={login} disabled={loading}>
   {loading ? "Logging in..." : "Login"}
 </button>
+{error && (
+  <div style={{ color: "red", marginTop: 10 }}>
+    {error}
+  </div>
+)}
   </>
 )}
 {user && (
