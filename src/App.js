@@ -66,26 +66,7 @@ const deletePerson = async (id) => {
   await deleteDoc(doc(db, viewType, id));
   loadPeople();
 };
-{!user && isAdminPage && (
-  <>
-    <h2>Admin Login</h2>
 
-    <input
-      placeholder="Email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-    />
-
-    <input
-      type="password"
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-    />
-
-    <button onClick={login}>Login</button>
-  </>
-)}
 const loadPeople = useCallback(async () => {
   try {
     const col = getCollection();
@@ -341,6 +322,26 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
     💍 Anniversaries
   </button>
 </div>
+{!user && isAdminPage && (
+  <>
+    <h2>Admin Login</h2>
+
+    <input
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+
+    <input
+      type="password"
+      placeholder="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
+
+    <button onClick={login}>Login</button>
+  </>
+)}
 {user && (
   <>
     <input
@@ -377,12 +378,10 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
 <h2>
   {viewType === "people" ? "Birthdays 🎂" : "Anniversaries 💍"}
 </h2>
-{(() => {
-  if (filteredResults.length === 0) {
-    return <div>No results</div>;
-  }
-
-  return sortPeople(filteredResults).map((person) => {
+{filteredResults.length === 0 ? (
+  <div>No results</div>
+) : (
+  sortPeople(filteredResults).map((person) => {
     const type = isSearching ? person.type : viewType;
 
     return (
@@ -397,7 +396,7 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
           {type === "people"
             ? `turns ${getAgeNumber(person.birthday) + 1} ${getBirthdayText(person.birthday)}`
             : `${getOrdinal(getYearsMarriedNumber(person.birthday) + 1)} anniversary ${getBirthdayText(person.birthday)}`}
-          
+
           {isSearching && (
             <> {" • "} {type === "people" ? "🎂 Birthday" : "💍 Anniversary"} </>
           )}
@@ -420,8 +419,8 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
         )}
       </div>
     );
-  });
-})()}
+  })
+)}
 
     </div>
   );
