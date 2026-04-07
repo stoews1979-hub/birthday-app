@@ -3,7 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSy...", // your real values
+  apiKey: "AIzaSyAlwsk8GJkrMfiJGUQjlAlvlu-SdI4zYd4"
   authDomain: "birthday-reminder-app-xxxx.firebaseapp.com",
   projectId: "birthday-reminder-app-f1c32",
   storageBucket: "birthday-reminder-app-xxxx.appspot.com",
