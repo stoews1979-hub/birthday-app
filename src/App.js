@@ -6,6 +6,8 @@ import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { signInWithEmailAndPassword } from "firebase/auth";
 function App() {
+  const [error, setError] = useState("");
+const [loading, setLoading] = useState(false);
   const isAdminPage = window.location.pathname === "/admin";
   const [search, setSearch] = useState("");
   const [viewType, setViewType] = useState("people");
@@ -32,8 +34,40 @@ const [birthdays, setBirthdays] = useState([]);
 const [anniversaries, setAnniversaries] = useState([]);
 
 const login = async () => {
-  await signInWithEmailAndPassword(auth, email, password);
+  setError("");
+  setLoading(true);
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    console.error("LOGIN ERROR:", err.code, err.message);
+
+    // Friendly messages
+    switch (err.code) {
+      case "auth/user-not-found":
+        setError("No account found with that email");
+        break;
+      case "auth/wrong-password":
+        setError("Incorrect password");
+        break;
+      case "auth/invalid-email":
+        setError("Invalid email format");
+        break;
+      case "auth/invalid-login-credentials":
+        setError("Invalid email or password");
+        break;
+      default:
+        setError("Login failed. Try again.");
+    }
+  }
+
+  setLoading(false);
 };
+{error && (
+  <div style={{ color: "red", marginTop: 10 }}>
+    {error}
+  </div>
+)}
 
 const addPerson = async () => {
   if (!name || !birthday) return;
@@ -327,19 +361,27 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
     <h2>Admin Login</h2>
 
     <input
-      placeholder="Email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-    />
+  placeholder="Email"
+  value={email}
+  onChange={(e) => {
+    setEmail(e.target.value);
+    setError("");   // 👈 clears error when typing
+  }}
+/>
 
-    <input
-      type="password"
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-    />
+<input
+  type="password"
+  placeholder="Password"
+  value={password}
+  onChange={(e) => {
+    setPassword(e.target.value);
+    setError("");   // 👈 clears error when typing
+  }}
+/>
 
-    <button onClick={login}>Login</button>
+    <button onClick={login} disabled={loading}>
+  {loading ? "Logging in..." : "Login"}
+</button>
   </>
 )}
 {user && (
