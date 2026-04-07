@@ -1,16 +1,26 @@
 
+import { onAuthStateChanged } from "firebase/auth";
 import "./App.css";
 import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 function App() {
+  const isAdminPage = window.location.pathname === "/admin";
   const [search, setSearch] = useState("");
   const [viewType, setViewType] = useState("people");
   const getCollection = useCallback(() => {
   return collection(db, viewType);
-}, [viewType]);
-  const [isAdmin, setIsAdmin] = useState(false);
+}, [viewType]);const [user, setUser] = useState(null);
+
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    setUser(currentUser);
+  });
+
+  return () => unsubscribe();
+}, []);
+
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [people, setPeople] = useState([]);
@@ -306,7 +316,6 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
   value={search}
   onChange={(e) => setSearch(e.target.value)}
 />
-    <h2>Login</h2>
       <div className="top-buttons">
   <button onClick={() => setViewType("people")}>
     🎂 Birthdays
@@ -316,12 +325,9 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
     💍 Anniversaries
   </button>
 </div>
-      <button onClick={() => setIsAdmin(!isAdmin)}>
-  {isAdmin ? "Exit Admin Mode" : "Enter Admin Mode"}
-</button>
-{isAdmin && (
+{!user && isAdminPage && (
   <>
-    <h2>Login</h2>
+    <h2>Admin Login</h2>
 
     <input
       placeholder="Email"
@@ -336,24 +342,7 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
       onChange={(e) => setPassword(e.target.value)}
     />
 
-    <button onClick={signUp}>Sign Up</button>
     <button onClick={login}>Login</button>
-
-    <input
-      placeholder="Name"
-      value={name}
-      onChange={(e) => setName(e.target.value)}
-    />
-
-    <input
-      type="date"
-      value={birthday}
-      onChange={(e) => setBirthday(e.target.value)}
-    />
-
-    <button onClick={editingId ? updatePerson : addPerson}>
-      {editingId ? "Update" : "Add"}
-    </button>
   </>
 )}
 
@@ -399,7 +388,7 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
           )}
         </span>
 
-        {isAdmin && !isSearching && (
+        {user && !isSearching && (
           <span className="actions">
             <button onClick={() => {
               setName(person.name);
