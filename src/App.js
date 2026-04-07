@@ -5,6 +5,7 @@ import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 function App() {
+  const [search, setSearch] = useState("");
   const [viewType, setViewType] = useState("people");
   const getCollection = useCallback(() => {
   return collection(db, viewType);
@@ -269,6 +270,15 @@ const getBirthdayText = (birthday) => {
   if (days === 1) return "🎂 Tomorrow";
   return `in ${days} days`;
 };
+const isSearching = search.trim() !== "";
+
+const combinedData = [
+  ...birthdays.map(p => ({ ...p, type: "people" })),
+  ...anniversaries.map(p => ({ ...p, type: "anniversaries" }))
+];
+const filteredResults = (isSearching ? combinedData : people).filter(person =>
+  person.name.toLowerCase().includes(search.toLowerCase())
+);
   return (
   <div className="app-container">
     <h1>Birthday App 🎂</h1>
@@ -290,7 +300,12 @@ const getBirthdayText = (birthday) => {
         <div key={person.id}>💍 {person.name}</div>
       ))
     )}
-
+<input
+  type="text"
+  placeholder="Search..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+/>
     <h2>Login</h2>
       <div className="top-buttons">
   <button onClick={() => setViewType("people")}>
@@ -358,36 +373,51 @@ const getBirthdayText = (birthday) => {
 <h2>
   {viewType === "people" ? "Birthdays 🎂" : "Anniversaries 💍"}
 </h2>
-{sortPeople(people).map((person) => (
-  <div className="person-row">
- <span>
-  {person.name} - {formatDate(person.birthday)} (
-  {viewType === "people"
-    ? getAgeDisplay(person.birthday)
-    : getYearsMarried(person.birthday)}
-  )
-  {" • "}
-  {viewType === "people"
-    ? `turns ${getAgeNumber(person.birthday) + 1} ${getBirthdayText(person.birthday)}`
-    : `${getOrdinal(getYearsMarriedNumber(person.birthday) + 1)} anniversary ${getBirthdayText(person.birthday)}`}
-</span>
- {isAdmin && (
-  <span className="actions">
-    <button onClick={() => {
-      setName(person.name);
-      setBirthday(person.birthday);
-      setEditingId(person.id);
-    }}>
-      Edit
-    </button>
+{(() => {
+  if (filteredResults.length === 0) {
+    return <div>No results</div>;
+  }
 
-    <button onClick={() => deletePerson(person.id)}>
-      Delete
-    </button>
-  </span>
-)}
-  </div>
-))}
+  return sortPeople(filteredResults).map((person) => {
+    const type = isSearching ? person.type : viewType;
+
+    return (
+      <div className="person-row" key={person.id}>
+        <span>
+          {person.name} - {formatDate(person.birthday)} (
+          {type === "people"
+            ? getAgeDisplay(person.birthday)
+            : getYearsMarried(person.birthday)}
+          )
+          {" • "}
+          {type === "people"
+            ? `turns ${getAgeNumber(person.birthday) + 1} ${getBirthdayText(person.birthday)}`
+            : `${getOrdinal(getYearsMarriedNumber(person.birthday) + 1)} anniversary ${getBirthdayText(person.birthday)}`}
+          
+          {isSearching && (
+            <> {" • "} {type === "people" ? "🎂 Birthday" : "💍 Anniversary"} </>
+          )}
+        </span>
+
+        {isAdmin && !isSearching && (
+          <span className="actions">
+            <button onClick={() => {
+              setName(person.name);
+              setBirthday(person.birthday);
+              setEditingId(person.id);
+            }}>
+              Edit
+            </button>
+
+            <button onClick={() => deletePerson(person.id)}>
+              Delete
+            </button>
+          </span>
+        )}
+      </div>
+    );
+  });
+})()}
 
     </div>
   );
