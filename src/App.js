@@ -4,7 +4,7 @@ import "./App.css";
 import { useState, useEffect, useCallback } from "react";
 import { db, auth } from "./firebase";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 function App() {
   const isAdminPage = window.location.pathname === "/admin";
   const [search, setSearch] = useState("");
@@ -30,9 +30,6 @@ const [editingId, setEditingId] = useState(null);
 const [sortType, setSortType] = useState("nextBirthday");
 const [birthdays, setBirthdays] = useState([]);
 const [anniversaries, setAnniversaries] = useState([]);
-const signUp = async () => {
-  await createUserWithEmailAndPassword(auth, email, password);
-};
 
 const login = async () => {
   await signInWithEmailAndPassword(auth, email, password);
@@ -69,7 +66,26 @@ const deletePerson = async (id) => {
   await deleteDoc(doc(db, viewType, id));
   loadPeople();
 };
+{!user && isAdminPage && (
+  <>
+    <h2>Admin Login</h2>
 
+    <input
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+
+    <input
+      type="password"
+      placeholder="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
+
+    <button onClick={login}>Login</button>
+  </>
+)}
 const loadPeople = useCallback(async () => {
   try {
     const col = getCollection();
@@ -325,24 +341,23 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
     💍 Anniversaries
   </button>
 </div>
-{!user && isAdminPage && (
+{user && (
   <>
-    <h2>Admin Login</h2>
-
     <input
-      placeholder="Email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
+      placeholder="Name"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
     />
 
     <input
-      type="password"
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
+      type="date"
+      value={birthday}
+      onChange={(e) => setBirthday(e.target.value)}
     />
 
-    <button onClick={login}>Login</button>
+    <button onClick={editingId ? updatePerson : addPerson}>
+      {editingId ? "Update" : "Add"}
+    </button>
   </>
 )}
 
