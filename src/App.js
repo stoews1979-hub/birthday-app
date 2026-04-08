@@ -161,7 +161,12 @@ const loadAllData = async () => {
     console.error("ERROR LOADING ALL DATA:", err);
   }
 };
-const todayString = new Date().toISOString().slice(5, 10);
+const today = new Date();
+
+const month = String(today.getMonth() + 1).padStart(2, "0");
+const day = String(today.getDate()).padStart(2, "0");
+
+const todayString = `${month}-${day}`;
 
 const todaysBirthdays = birthdays.filter(person =>
   person.birthday && person.birthday.slice(5, 10) === todayString
