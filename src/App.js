@@ -10,6 +10,7 @@ function App() {
 const [loading, setLoading] = useState(false);
   const isAdminPage = window.location.pathname === "/admin";
   const [search, setSearch] = useState("");
+ const [selectedRange, setSelectedRange] = useState(null); 
   const [viewType, setViewType] = useState("people");
   const getCollection = useCallback(() => {
   return collection(db, viewType);
@@ -374,10 +375,37 @@ const combinedData = [
   ...birthdays.map(p => ({ ...p, type: "people" })),
   ...anniversaries.map(p => ({ ...p, type: "anniversaries" }))
 ];
-const filteredResults = (isSearching ? combinedData : people).filter(person =>
-  person.name.toLowerCase().includes(search.toLowerCase())
-);
-const LineChart = ({ title, groups }) => {
+const baseList = isSearching
+  ? combinedData
+  : viewType === "people"
+  ? birthdays
+  : viewType === "anniversaries"
+  ? anniversaries
+  : [];
+
+const filteredResults = baseList.filter(person => {
+  const matchesSearch = person.name
+    .toLowerCase()
+    .includes(search.toLowerCase());
+
+  if (!selectedRange) return matchesSearch;
+
+  const [min, max] = selectedRange.split("-").map(Number);
+
+  const type = isSearching ? person.type : viewType;
+
+  const value =
+    type === "people"
+      ? getAgeNumber(person.birthday)
+      : getYearsMarriedNumber(person.birthday);
+
+  return (
+    matchesSearch &&
+    value >= min &&
+    value <= max
+  );
+});
+const LineChart = ({ title, groups, color = "#4caf50", selectedRange, setSelectedRange }) => {
   const points = getLinePoints(groups);
 
   return (
@@ -417,20 +445,35 @@ const LineChart = ({ title, groups }) => {
         })}
 
         {/* Points */}
-        {points.map((point, i) => (
-          <g key={i}>
-            <circle cx={point.x} cy={point.y} r="4" fill="#4caf50" />
-            <text
-              x={point.x}
-              y={point.y - 10}
-              fontSize="10"
-              textAnchor="middle"
-            >
-              {point.count}
-            </text>
-          </g>
-        ))}
+    {points.map((point, i) => (
+  <g
+    key={i}
+    onClick={() =>
+      setSelectedRange(
+        selectedRange === point.label ? null : point.label
+      )
+    }
+    style={{ cursor: "pointer" }}
+  >
+    <circle
+      cx={point.x}
+      cy={point.y}
+      r={selectedRange === point.label ? 6 : 4}
+      fill={color}
+      stroke={selectedRange === point.label ? "black" : "none"}
+      strokeWidth="2"
+    />
 
+    <text
+      x={point.x}
+      y={point.y - 10}
+      fontSize="10"
+      textAnchor="middle"
+    >
+      {point.count}
+    </text>
+  </g>
+))}
         {/* Labels */}
         {points.map((point, i) => (
           <text
@@ -565,14 +608,20 @@ const LineChart = ({ title, groups }) => {
   <div>
     <p>Average Age: {getAverageAge()}</p>
     <p>Total People: {birthdays.length}</p>
-    <LineChart
+ <LineChart
   title="🎂 Age Distribution"
   groups={getGroups(birthdays, getAgeNumber)}
+  color="#4caf50"
+  selectedRange={selectedRange}
+  setSelectedRange={setSelectedRange}
 />
 
 <LineChart
   title="💍 Years Married Distribution"
   groups={getGroups(anniversaries, getYearsMarriedNumber)}
+  color="#2196f3"
+  selectedRange={selectedRange}
+  setSelectedRange={setSelectedRange}
 />
 
   </div>
