@@ -1,4 +1,4 @@
-
+import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { onAuthStateChanged } from "firebase/auth";
 import "./App.css";
 import { useState, useEffect, useCallback } from "react";
@@ -134,6 +134,40 @@ const loadPeople = useCallback(async () => {
         getNextBirthday(a.birthday) - getNextBirthday(b.birthday)
       );
   }
+};
+const getAgeGroups = () => {
+  const groups = {};
+
+  birthdays.forEach(person => {
+    if (!person.birthday) return;
+
+    const age = getAgeNumber(person.birthday);
+    const bucket = Math.floor(age / 10) * 10;
+    const label = `${bucket}-${bucket + 9}`;
+
+    if (!groups[label]) {
+      groups[label] = 0;
+    }
+
+    groups[label]++;
+  });
+
+  return Object.keys(groups)
+    .sort((a, b) => parseInt(a) - parseInt(b))
+    .map(key => ({
+      range: key,
+      count: groups[key]
+    }));
+};
+
+const getAverageAge = () => {
+  if (!birthdays.length) return 0;
+
+  const total = birthdays.reduce((sum, p) => {
+    return sum + getAgeNumber(p.birthday);
+  }, 0);
+
+  return (total / birthdays.length).toFixed(1);
 };
 useEffect(() => {
   loadPeople();   
@@ -305,6 +339,18 @@ const getYearsMarried = (date) => {
 
   return `${years} yrs`;
 };
+const getLinePoints = () => {
+  const groups = getAgeGroups();
+
+  const maxCount = Math.max(...groups.map(g => g.count), 1);
+
+  return groups.map((g, index) => ({
+    x: index * 60 + 20, // spacing between points
+    y: 200 - (g.count / maxCount) * 150, // scale height
+    label: g.range,
+    count: g.count
+  }));
+};
 const getBirthdayText = (birthday) => {
   const days = getDaysUntilBirthday(birthday);
 
@@ -348,13 +394,17 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
   value={search}
   onChange={(e) => setSearch(e.target.value)}
 />
-      <div className="top-buttons">
+<div className="top-buttons">
   <button onClick={() => setViewType("people")}>
     🎂 Birthdays
   </button>
 
   <button onClick={() => setViewType("anniversaries")}>
     💍 Anniversaries
+  </button>
+
+  <button onClick={() => setViewType("stats")}>
+    📊 Stats
   </button>
 </div>
 {!user && isAdminPage && (
@@ -424,10 +474,75 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
   </button>
   </div>
 <h2>
-  {viewType === "people" ? "Birthdays 🎂" : "Anniversaries 💍"}
+  {viewType === "people"
+    ? "Birthdays 🎂"
+    : viewType === "anniversaries"
+    ? "Anniversaries 💍"
+    : "Stats 📊"}
 </h2>
-{filteredResults.length === 0 ? (
-  <div>No results</div>
+{viewType === "stats" ? (
+  <div>
+    <p>Average Age: {getAverageAge()}</p>
+    <p>Total People: {birthdays.length}</p>
+
+    <svg width="400" height="220" style={{ border: "1px solid #ccc" }}>
+      {/* Lines */}
+      {getLinePoints().map((point, i, arr) => {
+        if (i === 0) return null;
+
+        const prev = arr[i - 1];
+
+        return (
+          <line
+            key={i}
+            x1={prev.x}
+            y1={prev.y}
+            x2={point.x}
+            y2={point.y}
+            stroke="#4caf50"
+            strokeWidth="2"
+          />
+        );
+      })}
+
+      {/* Points */}
+      {getLinePoints().map((point, i) => (
+  <g key={i}>
+    {/* Dot */}
+    <circle
+      cx={point.x}
+      cy={point.y}
+      r="4"
+      fill="#4caf50"
+    />
+
+    {/* Count above dot */}
+    <text
+      x={point.x}
+      y={point.y - 8}
+      fontSize="10"
+      textAnchor="middle"
+      fill="#333"
+    >
+      {point.count}
+    </text>
+  </g>
+))}
+
+      {/* Labels */}
+      {getLinePoints().map((point, i) => (
+        <text
+          key={i}
+          x={point.x}
+          y={210}
+          fontSize="10"
+          textAnchor="middle"
+        >
+          {point.label}
+        </text>
+      ))}
+    </svg>
+  </div>
 ) : (
   sortPeople(filteredResults).map((person) => {
     const type = isSearching ? person.type : viewType;
