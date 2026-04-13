@@ -26,7 +26,6 @@ useEffect(() => {
 
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
-  const [people, setPeople] = useState([]);
 const [editingId, setEditingId] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,7 +75,7 @@ const addPerson = async () => {
 
   setName("");
   setBirthday("");
-  loadPeople();
+  loadAllData();
 };
 const updatePerson = async () => {
   console.log("UPDATING ID:", editingId);
@@ -91,28 +90,14 @@ const updatePerson = async () => {
   setName("");
   setBirthday("");
   setEditingId(null);
-  loadPeople();
+  loadAllData();
 };
 const deletePerson = async (id) => {
   await deleteDoc(doc(db, viewType, id));
-  loadPeople();
+  loadAllData();
 };
 
-const loadPeople = useCallback(async () => {
-  try {
-    const col = getCollection();
-    const data = await getDocs(col);
-
-    setPeople(
-      data.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      }))
-    );
-  } catch (err) {
-    console.error("ERROR LOADING PEOPLE:", err);
-  }
-}, [getCollection]);const sortPeople = (list) => {
+const sortPeople = (list) => {
   switch (sortType) {
     case "name":
       return [...list].sort((a, b) =>
@@ -179,9 +164,8 @@ const getAverageAge = () => {
   return (total / birthdays.length).toFixed(1);
 };
 useEffect(() => {
-  loadPeople();   
-  loadAllData();    
-}, [loadPeople]);
+  loadAllData();
+}, []);
 const loadAllData = async () => {
   try {
     const birthdayData = await getDocs(collection(db, "people"));
