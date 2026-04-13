@@ -7,6 +7,7 @@ import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase
 import { signInWithEmailAndPassword } from "firebase/auth";
 function App() {
   const [error, setError] = useState("");
+  const [hoveredPoint, setHoveredPoint] = useState(null);
 const [loading, setLoading] = useState(false);
   const isAdminPage = window.location.pathname === "/admin";
   const [search, setSearch] = useState("");
@@ -138,28 +139,41 @@ const loadPeople = useCallback(async () => {
 const getAgeGroups = () => {
   const groups = {};
 
-  birthdays.forEach(person => {
-    if (!person.birthday) return;
+  // 🔑 find the oldest person
+  const ages = birthdays
+  .map(p => getAgeNumber(p.birthday))
+  .filter(age => !isNaN(age));
 
-    const age = getAgeNumber(person.birthday);
-    const bucket = Math.floor(age / 10) * 10;
-    const label = `${bucket}-${bucket + 9}`;
+const maxAge = Math.max(...ages, 0);
 
-    if (!groups[label]) {
-      groups[label] = 0;
-    }
+  // round up to nearest 10
+  const maxBucket = Math.ceil(maxAge / 10) * 10;
 
-    groups[label]++;
-  });
+  // create all buckets up to max
+  for (let i = 0; i <= maxBucket; i += 10) {
+    const label = `${i}-${i + 9}`;
+    groups[label] = 0;
+  }
 
-  return Object.keys(groups)
-    .sort((a, b) => parseInt(a) - parseInt(b))
-    .map(key => ({
-      range: key,
-      count: groups[key]
-    }));
+  // count people
+birthdays.forEach(person => {
+  if (!person.birthday) return;
+
+  const age = getAgeNumber(person.birthday);
+  if (isNaN(age)) return; // 👈 ADD THIS
+
+  const bucket = Math.floor(age / 10) * 10;
+  const label = `${bucket}-${bucket + 9}`;
+
+  groups[label]++;
+});
+
+  // return sorted
+  return Object.keys(groups).map(key => ({
+    range: key,
+    count: groups[key]
+  }));
 };
-
 const getAverageAge = () => {
   if (!birthdays.length) return 0;
 
@@ -344,9 +358,13 @@ const getLinePoints = () => {
 
   const maxCount = Math.max(...groups.map(g => g.count), 1);
 
+  const width = 400;
+  const padding = 20;
+  const usableWidth = width - padding * 2;
+
   return groups.map((g, index) => ({
-    x: index * 60 + 20, // spacing between points
-    y: 200 - (g.count / maxCount) * 150, // scale height
+    x: padding + (index / (groups.length - 1)) * usableWidth,
+    y: 200 - (g.count / maxCount) * 150,
     label: g.range,
     count: g.count
   }));
@@ -485,63 +503,88 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
     <p>Average Age: {getAverageAge()}</p>
     <p>Total People: {birthdays.length}</p>
 
-    <svg width="400" height="220" style={{ border: "1px solid #ccc" }}>
-      {/* Lines */}
-      {getLinePoints().map((point, i, arr) => {
-        if (i === 0) return null;
+   <svg viewBox="0 0 400 220" style={{ width: "100%", height: "auto", border: "1px solid #ccc", borderRadius: 8 }}>
 
-        const prev = arr[i - 1];
+  {/* Lines */}
+  {getLinePoints().map((point, i, arr) => {
+    if (i === 0) return null;
+    const prev = arr[i - 1];
 
-        return (
-          <line
-            key={i}
-            x1={prev.x}
-            y1={prev.y}
-            x2={point.x}
-            y2={point.y}
-            stroke="#4caf50"
-            strokeWidth="2"
-          />
-        );
-      })}
+    return (
+      <line
+        key={i}
+        x1={prev.x}
+        y1={prev.y}
+        x2={point.x}
+        y2={point.y}
+        stroke="#4caf50"
+        strokeWidth="2"
+      />
+    );
+  })}
 
-      {/* Points */}
-      {getLinePoints().map((point, i) => (
-  <g key={i}>
-    {/* Dot */}
-    <circle
-      cx={point.x}
-      cy={point.y}
-      r="4"
-      fill="#4caf50"
-    />
+  {/* Points + hover */}
+  {getLinePoints().map((point, i) => (
+    <g
+      key={i}
+      onMouseEnter={() => setHoveredPoint(point)}
+      onMouseLeave={() => setHoveredPoint(null)}
+    >
+      <circle
+        cx={point.x}
+        cy={point.y}
+        r={hoveredPoint === point ? 6 : 4}
+        fill="#4caf50"
+      />
 
-    {/* Count above dot */}
+      {/* Count above */}
+      <text
+        x={point.x}
+        y={point.y - 10}
+        fontSize="10"
+        textAnchor="middle"
+      >
+        {point.count}
+      </text>
+    </g>
+  ))}
+
+  {/* X labels */}
+  {getLinePoints().map((point, i) => (
     <text
+      key={i}
       x={point.x}
-      y={point.y - 8}
+      y={210}
       fontSize="10"
       textAnchor="middle"
-      fill="#333"
     >
-      {point.count}
+      {point.label}
     </text>
-  </g>
-))}
+  ))}
 
-      {/* Labels */}
-      {getLinePoints().map((point, i) => (
-        <text
-          key={i}
-          x={point.x}
-          y={210}
-          fontSize="10"
-          textAnchor="middle"
-        >
-          {point.label}
-        </text>
-      ))}
-    </svg>
+  {/* Tooltip */}
+  {hoveredPoint && (
+    <g>
+      <rect
+        x={hoveredPoint.x - 35}
+        y={hoveredPoint.y - 40}
+        width="70"
+        height="24"
+        fill="black"
+        rx="4"
+      />
+      <text
+        x={hoveredPoint.x}
+        y={hoveredPoint.y - 24}
+        fontSize="10"
+        fill="white"
+        textAnchor="middle"
+      >
+        {hoveredPoint.label}: {hoveredPoint.count}
+      </text>
+    </g>
+  )}
+</svg>
   </div>
 ) : (
   sortPeople(filteredResults).map((person) => {
