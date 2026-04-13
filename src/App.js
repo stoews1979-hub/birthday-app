@@ -389,7 +389,14 @@ const filteredResults = baseList.filter(person => {
     value <= max
   );
 });
-const LineChart = ({ title, groups, color = "#4caf50", selectedRange, setSelectedRange }) => {
+const LineChart = ({
+  title,
+  groups,
+  color,
+  selectedRange,
+  setSelectedRange,
+  setViewType
+}) => {
   const points = getLinePoints(groups);
 
   return (
@@ -432,11 +439,19 @@ const LineChart = ({ title, groups, color = "#4caf50", selectedRange, setSelecte
     {points.map((point, i) => (
   <g
     key={i}
-    onClick={() =>
-      setSelectedRange(
-        selectedRange === point.label ? null : point.label
-      )
-    }
+   onClick={() => {
+  const newRange =
+    selectedRange === point.label ? null : point.label;
+
+  setSelectedRange(newRange);
+
+  // 👇 AUTO SWITCH
+  if (title.includes("Age")) {
+    setViewType("people");
+  } else {
+    setViewType("anniversaries");
+  }
+}}
     style={{ cursor: "pointer" }}
   >
     <circle
@@ -592,12 +607,13 @@ const LineChart = ({ title, groups, color = "#4caf50", selectedRange, setSelecte
   <div>
     <p>Average Age: {getAverageAge()}</p>
     <p>Total People: {birthdays.length}</p>
- <LineChart
+<LineChart
   title="🎂 Age Distribution"
   groups={getGroups(birthdays, getAgeNumber)}
   color="#4caf50"
   selectedRange={selectedRange}
   setSelectedRange={setSelectedRange}
+  setViewType={setViewType}
 />
 
 <LineChart
@@ -606,11 +622,22 @@ const LineChart = ({ title, groups, color = "#4caf50", selectedRange, setSelecte
   color="#2196f3"
   selectedRange={selectedRange}
   setSelectedRange={setSelectedRange}
+  setViewType={setViewType}
 />
 
   </div>
 ) : (
-  sortPeople(filteredResults).map((person) => {
+  <>
+    {selectedRange && (
+      <div style={{ marginBottom: 10 }}>
+        Showing: {selectedRange}{" "}
+        <button onClick={() => setSelectedRange(null)}>
+          Clear
+        </button>
+      </div>
+    )}
+
+    {sortPeople(filteredResults).map((person) => {
     const type = isSearching ? person.type : viewType;
 
     return (
@@ -648,7 +675,8 @@ const LineChart = ({ title, groups, color = "#4caf50", selectedRange, setSelecte
         )}
       </div>
     );
-  })
+   })}
+  </>
 )}
 
     </div>
