@@ -136,44 +136,39 @@ const loadPeople = useCallback(async () => {
       );
   }
 };
-const getAgeGroups = () => {
+const getGroups = (list, getNumberFn) => {
   const groups = {};
 
-  // 🔑 find the oldest person
-  const ages = birthdays
-  .map(p => getAgeNumber(p.birthday))
-  .filter(age => !isNaN(age));
+  const numbers = list
+    .map(p => getNumberFn(p.birthday))
+    .filter(n => !isNaN(n));
 
-const maxAge = Math.max(...ages, 0);
+  const max = Math.max(...numbers, 0);
+  const maxBucket = Math.ceil(max / 10) * 10;
 
-  // round up to nearest 10
-  const maxBucket = Math.ceil(maxAge / 10) * 10;
-
-  // create all buckets up to max
   for (let i = 0; i <= maxBucket; i += 10) {
     const label = `${i}-${i + 9}`;
     groups[label] = 0;
   }
 
-  // count people
-birthdays.forEach(person => {
-  if (!person.birthday) return;
+  list.forEach(person => {
+    if (!person.birthday) return;
 
-  const age = getAgeNumber(person.birthday);
-  if (isNaN(age)) return; // 👈 ADD THIS
+    const num = getNumberFn(person.birthday);
+    if (isNaN(num)) return;
 
-  const bucket = Math.floor(age / 10) * 10;
-  const label = `${bucket}-${bucket + 9}`;
+    const bucket = Math.floor(num / 10) * 10;
+    const label = `${bucket}-${bucket + 9}`;
 
-  groups[label]++;
-});
+    groups[label]++;
+  });
 
-  // return sorted
   return Object.keys(groups).map(key => ({
     range: key,
     count: groups[key]
   }));
 };
+
 const getAverageAge = () => {
   if (!birthdays.length) return 0;
 
@@ -353,9 +348,7 @@ const getYearsMarried = (date) => {
 
   return `${years} yrs`;
 };
-const getLinePoints = () => {
-  const groups = getAgeGroups();
-
+const getLinePoints = (groups) => {
   const maxCount = Math.max(...groups.map(g => g.count), 1);
 
   const width = 400;
@@ -363,7 +356,7 @@ const getLinePoints = () => {
   const usableWidth = width - padding * 2;
 
   return groups.map((g, index) => ({
-    x: padding + (index / (groups.length - 1)) * usableWidth,
+    x: padding + (index / (groups.length - 1 || 1)) * usableWidth,
     y: 200 - (g.count / maxCount) * 150,
     label: g.range,
     count: g.count
@@ -385,7 +378,78 @@ const combinedData = [
 const filteredResults = (isSearching ? combinedData : people).filter(person =>
   person.name.toLowerCase().includes(search.toLowerCase())
 );
+const LineChart = ({ title, groups }) => {
+  const points = getLinePoints(groups);
+
   return (
+    <div style={{ marginBottom: 30 }}>
+      <h3>{title}</h3>
+
+      <svg
+        viewBox="0 0 400 220"
+        style={{
+          width: "100%",
+          height: "auto",
+          border: "1px solid #ccc",
+          borderRadius: 8
+        }}
+      >
+        {/* Grid */}
+        {[0, 50, 100, 150, 200].map((y, i) => (
+          <line key={i} x1="0" y1={y} x2="400" y2={y} stroke="#eee" />
+        ))}
+
+        {/* Lines */}
+        {points.map((point, i) => {
+          if (i === 0) return null;
+          const prev = points[i - 1];
+
+          return (
+            <line
+              key={i}
+              x1={prev.x}
+              y1={prev.y}
+              x2={point.x}
+              y2={point.y}
+              stroke="#4caf50"
+              strokeWidth="2"
+            />
+          );
+        })}
+
+        {/* Points */}
+        {points.map((point, i) => (
+          <g key={i}>
+            <circle cx={point.x} cy={point.y} r="4" fill="#4caf50" />
+            <text
+              x={point.x}
+              y={point.y - 10}
+              fontSize="10"
+              textAnchor="middle"
+            >
+              {point.count}
+            </text>
+          </g>
+        ))}
+
+        {/* Labels */}
+        {points.map((point, i) => (
+          <text
+            key={i}
+            x={point.x}
+            y={210}
+            fontSize="10"
+            textAnchor="middle"
+          >
+            {point.label}
+          </text>
+        ))}
+      </svg>
+    </div>
+  );
+};
+  return (
+    
   <div className="app-container">
     <h1>Birthday App 🎂</h1>
 
@@ -502,89 +566,16 @@ const filteredResults = (isSearching ? combinedData : people).filter(person =>
   <div>
     <p>Average Age: {getAverageAge()}</p>
     <p>Total People: {birthdays.length}</p>
+    <LineChart
+  title="🎂 Age Distribution"
+  groups={getGroups(birthdays, getAgeNumber)}
+/>
 
-   <svg viewBox="0 0 400 220" style={{ width: "100%", height: "auto", border: "1px solid #ccc", borderRadius: 8 }}>
+<LineChart
+  title="💍 Years Married Distribution"
+  groups={getGroups(anniversaries, getYearsMarriedNumber)}
+/>
 
-  {/* Lines */}
-  {getLinePoints().map((point, i, arr) => {
-    if (i === 0) return null;
-    const prev = arr[i - 1];
-
-    return (
-      <line
-        key={i}
-        x1={prev.x}
-        y1={prev.y}
-        x2={point.x}
-        y2={point.y}
-        stroke="#4caf50"
-        strokeWidth="2"
-      />
-    );
-  })}
-
-  {/* Points + hover */}
-  {getLinePoints().map((point, i) => (
-    <g
-      key={i}
-      onMouseEnter={() => setHoveredPoint(point)}
-      onMouseLeave={() => setHoveredPoint(null)}
-    >
-      <circle
-        cx={point.x}
-        cy={point.y}
-        r={hoveredPoint === point ? 6 : 4}
-        fill="#4caf50"
-      />
-
-      {/* Count above */}
-      <text
-        x={point.x}
-        y={point.y - 10}
-        fontSize="10"
-        textAnchor="middle"
-      >
-        {point.count}
-      </text>
-    </g>
-  ))}
-
-  {/* X labels */}
-  {getLinePoints().map((point, i) => (
-    <text
-      key={i}
-      x={point.x}
-      y={210}
-      fontSize="10"
-      textAnchor="middle"
-    >
-      {point.label}
-    </text>
-  ))}
-
-  {/* Tooltip */}
-  {hoveredPoint && (
-    <g>
-      <rect
-        x={hoveredPoint.x - 35}
-        y={hoveredPoint.y - 40}
-        width="70"
-        height="24"
-        fill="black"
-        rx="4"
-      />
-      <text
-        x={hoveredPoint.x}
-        y={hoveredPoint.y - 24}
-        fontSize="10"
-        fill="white"
-        textAnchor="middle"
-      >
-        {hoveredPoint.label}: {hoveredPoint.count}
-      </text>
-    </g>
-  )}
-</svg>
   </div>
 ) : (
   sortPeople(filteredResults).map((person) => {
