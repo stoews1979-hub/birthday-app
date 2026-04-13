@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+
 import { onAuthStateChanged } from "firebase/auth";
 import "./App.css";
 import { useState, useEffect, useCallback } from "react";
