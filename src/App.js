@@ -7,7 +7,6 @@ import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase
 import { signInWithEmailAndPassword } from "firebase/auth";
 function App() {
   const [error, setError] = useState("");
-  const [hoveredPoint, setHoveredPoint] = useState(null);
 const [loading, setLoading] = useState(false);
   const isAdminPage = window.location.pathname === "/admin";
   const [search, setSearch] = useState("");
