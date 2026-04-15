@@ -439,18 +439,24 @@ const LineChart = ({
     {points.map((point, i) => (
   <g
     key={i}
-   onClick={() => {
+  onClick={() => {
   const newRange =
     selectedRange === point.label ? null : point.label;
 
+  // set tab FIRST
+  const newView = title.includes("Age")
+    ? "people"
+    : "anniversaries";
+
+  setViewType(newView);
   setSelectedRange(newRange);
 
-  // 👇 AUTO SWITCH
-  if (title.includes("Age")) {
-    setViewType("people");
-  } else {
-    setViewType("anniversaries");
-  }
+  // 👇 scroll to list after render
+  setTimeout(() => {
+    document
+      .getElementById("results-section")
+      ?.scrollIntoView({ behavior: "smooth" });
+  }, 50);
 }}
     style={{ cursor: "pointer" }}
   >
@@ -498,9 +504,11 @@ const LineChart = ({
     {todaysBirthdays.length === 0 ? (
       <div>No birthdays today</div>
     ) : (
-      todaysBirthdays.map(person => (
-        <div key={person.id}>🎂 {person.name}</div>
-      ))
+     todaysBirthdays.map(person => (
+  <div key={person.id}>
+    🎂 {person.name} ({getAgeDisplay(person.birthday)})
+  </div>
+))
     )}
 
     <h2>Today's Anniversaries 💍</h2>
@@ -508,8 +516,10 @@ const LineChart = ({
       <div>No anniversaries today</div>
     ) : (
       todaysAnniversaries.map(person => (
-        <div key={person.id}>💍 {person.name}</div>
-      ))
+  <div key={person.id}>
+    💍 {person.name} ({getYearsMarried(person.birthday)})
+  </div>
+))
     )}
 <input
   type="text"
@@ -596,13 +606,14 @@ const LineChart = ({
     Sort: Age 🎯
   </button>
   </div>
-<h2>
-  {viewType === "people"
-    ? "Birthdays 🎂"
-    : viewType === "anniversaries"
-    ? "Anniversaries 💍"
-    : "Stats 📊"}
-</h2>
+<div id="results-section">
+  <h2>
+    {viewType === "people"
+      ? "Birthdays 🎂"
+      : viewType === "anniversaries"
+      ? "Anniversaries 💍"
+      : "Stats 📊"}
+  </h2>
 {viewType === "stats" ? (
   <div>
     <p>Average Age: {getAverageAge()}</p>
@@ -679,7 +690,8 @@ const LineChart = ({
   </>
 )}
 
-    </div>
+   </div>
+</div>
   );
 }
 
