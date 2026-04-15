@@ -639,14 +639,23 @@ const LineChart = ({
   </div>
 ) : (
   <>
-    {selectedRange && (
-      <div style={{ marginBottom: 10 }}>
-        Showing: {selectedRange}{" "}
-        <button onClick={() => setSelectedRange(null)}>
-          Clear
-        </button>
-      </div>
-    )}
+{selectedRange && (
+  <div style={{ marginBottom: 10 }}>
+    Showing: {selectedRange} ({filteredResults.length}{" "}
+    {(() => {
+      const label =
+        viewType === "anniversaries" ? "couple" : "person";
+
+      return filteredResults.length === 1
+        ? label
+        : `${label}s`;
+    })()})
+    {" "}
+    <button onClick={() => setSelectedRange(null)}>
+      Clear
+    </button>
+  </div>
+)}
 
     {sortPeople(filteredResults).map((person) => {
     const type = isSearching ? person.type : viewType;
