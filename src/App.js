@@ -99,19 +99,34 @@ const deletePerson = async (id) => {
 
 const sortPeople = (list) => {
   switch (sortType) {
-    case "name":
+    case "nameAsc":
       return [...list].sort((a, b) =>
         a.name.localeCompare(b.name)
       );
 
-    case "age":
+    case "nameDesc":
+      return [...list].sort((a, b) =>
+        b.name.localeCompare(a.name)
+      );
+
+  case "ageDesc":
   return [...list].sort((a, b) => {
-    const ageDiff = getAgeNumber(b.birthday) - getAgeNumber(a.birthday);
+    const getValue = (p) =>
+      viewType === "people"
+        ? getAgeNumber(p.birthday)
+        : getYearsMarriedNumber(p.birthday);
 
-    if (ageDiff !== 0) return ageDiff;
+    return getValue(b) - getValue(a);
+  });
 
-    // tie-breaker: next birthday
-    return getNextBirthday(a.birthday) - getNextBirthday(b.birthday);
+case "ageAsc":
+  return [...list].sort((a, b) => {
+    const getValue = (p) =>
+      viewType === "people"
+        ? getAgeNumber(p.birthday)
+        : getYearsMarriedNumber(p.birthday);
+
+    return getValue(a) - getValue(b);
   });
 
     case "nextBirthday":
@@ -598,13 +613,17 @@ const LineChart = ({
     Sort: Upcoming 🎂
   </button>
 
-  <button onClick={() => setSortType("name")}>
-    Sort: Name 🔤
-  </button>
-
-  <button onClick={() => setSortType("age")}>
-    Sort: Age 🎯
-  </button>
+<select
+  value={sortType}
+  onChange={(e) => setSortType(e.target.value)}
+  style={{ padding: 6, marginBottom: 10 }}
+>
+  <option value="nextBirthday">Upcoming 🎂</option>
+  <option value="nameAsc">Name A–Z 🔤</option>
+  <option value="nameDesc">Name Z–A 🔤</option>
+  <option value="ageDesc">Oldest → Youngest 🎯</option>
+  <option value="ageAsc">Youngest → Oldest 🎯</option>
+</select>
   </div>
 <div id="results-section">
   <h2>
