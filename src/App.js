@@ -608,23 +608,59 @@ const LineChart = ({
   </>
 )}
 
-<div style={{ marginBottom: 10 }}>
-  <button onClick={() => setSortType("nextBirthday")}>
-    Sort: Upcoming 🎂
-  </button>
+<div style={{ marginBottom: 15 }}>
+  <label
+    style={{
+      display: "block",
+      fontSize: 12,
+      color: "#666",
+      marginBottom: 4
+    }}
+  >
+    Sort by
+  </label>
 
-<select
-  value={sortType}
-  onChange={(e) => setSortType(e.target.value)}
-  style={{ padding: 6, marginBottom: 10 }}
->
-  <option value="nextBirthday">Upcoming 🎂</option>
-  <option value="nameAsc">Name A–Z 🔤</option>
-  <option value="nameDesc">Name Z–A 🔤</option>
-  <option value="ageDesc">Oldest → Youngest 🎯</option>
-  <option value="ageAsc">Youngest → Oldest 🎯</option>
-</select>
+  <div className="sort-container">
+  <span className="sort-label">Sort:</span>
+
+  <div className="sort-pills">
+    <button
+      className={sortType === "nextBirthday" ? "active" : ""}
+      onClick={() => setSortType("nextBirthday")}
+    >
+      Upcoming
+    </button>
+
+    <button
+      className={sortType === "nameAsc" ? "active" : ""}
+      onClick={() => setSortType("nameAsc")}
+    >
+      A–Z
+    </button>
+
+    <button
+      className={sortType === "nameDesc" ? "active" : ""}
+      onClick={() => setSortType("nameDesc")}
+    >
+      Z–A
+    </button>
+
+    <button
+      className={sortType === "ageDesc" ? "active" : ""}
+      onClick={() => setSortType("ageDesc")}
+    >
+      Oldest
+    </button>
+
+    <button
+      className={sortType === "ageAsc" ? "active" : ""}
+      onClick={() => setSortType("ageAsc")}
+    >
+      Youngest
+    </button>
   </div>
+</div>
+</div>
 <div id="results-section">
   <h2>
     {viewType === "people"
