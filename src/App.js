@@ -109,25 +109,31 @@ const sortPeople = (list) => {
         b.name.localeCompare(a.name)
       );
 
-  case "ageDesc":
-  return [...list].sort((a, b) => {
-    const getValue = (p) =>
-      viewType === "people"
-        ? getAgeNumber(p.birthday)
-        : getYearsMarriedNumber(p.birthday);
+    case "ageDesc":
+      return [...list].sort((a, b) => {
+        const getValue = (p) =>
+          viewType === "people"
+            ? getAgeNumber(p.birthday)
+            : getYearsMarriedNumber(p.birthday);
 
-    return getValue(b) - getValue(a);
-  });
+        const diff = getValue(b) - getValue(a);
+        if (diff !== 0) return diff;
 
-case "ageAsc":
-  return [...list].sort((a, b) => {
-    const getValue = (p) =>
-      viewType === "people"
-        ? getAgeNumber(p.birthday)
-        : getYearsMarriedNumber(p.birthday);
+        return getNextBirthday(a.birthday) - getNextBirthday(b.birthday);
+      });
 
-    return getValue(a) - getValue(b);
-  });
+    case "ageAsc":
+      return [...list].sort((a, b) => {
+        const getValue = (p) =>
+          viewType === "people"
+            ? getAgeNumber(p.birthday)
+            : getYearsMarriedNumber(p.birthday);
+
+        const diff = getValue(a) - getValue(b);
+        if (diff !== 0) return diff;
+
+        return getNextBirthday(a.birthday) - getNextBirthday(b.birthday);
+      });
 
     case "nextBirthday":
     default:
@@ -136,6 +142,7 @@ case "ageAsc":
       );
   }
 };
+
 const getGroups = (list, getNumberFn) => {
   const groups = {};
 
